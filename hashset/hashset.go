@@ -1,9 +1,9 @@
-// Package mapset provides an implementation of a set using the built-in map.
-package mapset
+// Package hashset provides an implementation of a set using the built-in map.
+package hashset
 
 // New returns an empty hashset.
-func New[T comparable](values ...T) *Set[T] {
-	set := &Set[T]{
+func New[T comparable](values ...T) Set[T] {
+	set := Set[T]{
 		values: make(map[T]struct{}),
 	}
 
@@ -40,6 +40,10 @@ func (s Set[T]) Has(val T) bool {
 
 // Has returns true only if 'val' is in the set.
 func (s Set[T]) HasAny(values ...T) bool {
+	if len(values) == 0 {
+		return true
+	}
+
 	for _, v := range values {
 		if _, ok := s.values[v]; ok {
 			return true
@@ -70,4 +74,75 @@ func (s Set[T]) Each(fn func(key T)) {
 	for k := range s.values {
 		fn(k)
 	}
+}
+
+// Values returns a slice of hashset elements.
+func (s Set[T]) Values() []T {
+	values := make([]T, 0, len(s.values))
+
+	for v := range s.values {
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// Sets operations.
+
+// Union returns new set that contains all elements from both sets.
+func (s Set[T]) Union(other Set[T]) Set[T] {
+	newSet := make(map[T]struct{})
+
+	for v := range s.values {
+		newSet[v] = struct{}{}
+	}
+
+	for v := range other.values {
+		newSet[v] = struct{}{}
+	}
+
+	return Set[T]{
+		values: newSet,
+	}
+}
+
+// Union returns new set that contains elements that are included in both sets.
+func (s Set[T]) Intersect(other Set[T]) Set[T] {
+	newSet := make(map[T]struct{})
+
+	for v := range s.values {
+		if _, ok := other.values[v]; ok {
+			newSet[v] = struct{}{}
+		}
+	}
+
+	return Set[T]{
+		values: newSet,
+	}
+}
+
+// Diff returns new set of values that are present in the first set, but not in the second.
+func (s Set[T]) Diff(other Set[T]) Set[T] {
+	newSet := make(map[T]struct{})
+
+	for v := range s.values {
+		if _, ok := other.values[v]; !ok {
+			newSet[v] = struct{}{}
+		}
+	}
+
+	return Set[T]{
+		values: newSet,
+	}
+}
+
+// IsSubset returns boolean whether fist set is subset of second.
+func (s Set[T]) IsSubset(other Set[T]) bool {
+	for v := range s.values {
+		if _, ok := other.values[v]; !ok {
+			return false
+		}
+	}
+
+	return true
 }
