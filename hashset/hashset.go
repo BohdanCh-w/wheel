@@ -76,6 +76,19 @@ func (s Set[T]) Each(fn func(key T)) {
 	}
 }
 
+// Map returns a new Set with applied function to each element
+func (s Set[T]) Map(fn func(key T) T) Set[T] {
+	newSet := make(map[T]struct{})
+
+	for k := range s.values {
+		newSet[fn(k)] = struct{}{}
+	}
+
+	return Set[T]{
+		values: newSet,
+	}
+}
+
 // Values returns a slice of hashset elements.
 func (s Set[T]) Values() []T {
 	values := make([]T, 0, len(s.values))
@@ -87,7 +100,32 @@ func (s Set[T]) Values() []T {
 	return values
 }
 
+// Clear clears all values
+func (s *Set[T]) Clear() {
+	s.values = make(map[T]struct{})
+}
+
+// Returns copt of current set
+func (s Set[T]) Copy() Set[T] {
+	return New(s.Values()...)
+}
+
 // Sets operations.
+
+// Equal returns true if both sets have equal values.
+func (s Set[T]) Equal(other Set[T]) bool {
+	if s.Len() != other.Len() {
+		return false
+	}
+
+	for v := range s.values {
+		if _, ok := other.values[v]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
 
 // Union returns new set that contains all elements from both sets.
 func (s Set[T]) Union(other Set[T]) Set[T] {
@@ -134,6 +172,19 @@ func (s Set[T]) Diff(other Set[T]) Set[T] {
 	return Set[T]{
 		values: newSet,
 	}
+}
+
+// SymDiff returns symetric difference of two sets values (that are values that are in first and second set, but not in both).
+func (s Set[T]) SymDiff(other Set[T]) Set[T] {
+	newSet := s.Union(other)
+
+	for v := range s.values {
+		if _, ok := other.values[v]; ok {
+			delete(newSet.values, v)
+		}
+	}
+
+	return newSet
 }
 
 // IsSubset returns boolean whether fist set is subset of second.

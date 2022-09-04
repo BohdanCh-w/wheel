@@ -56,6 +56,40 @@ func TestHashSetLen(t *testing.T) {
 	require.Equal(t, 3, hashset.New(1, 2, 3).Len())
 }
 
+func TestHashSetClear(t *testing.T) {
+	emptySet := hashset.New[int]()
+	fullSet := hashset.New(4, 6, 7)
+
+	emptySet.Clear()
+	fullSet.Clear()
+
+	require.Equal(t, 0, emptySet.Len())
+	require.Equal(t, 0, fullSet.Len())
+}
+
+func TestHashSetCopy(t *testing.T) {
+	set := hashset.New(1, 2, 3)
+	clone := set.Copy()
+
+	require.ElementsMatch(t, set.Values(), clone.Values())
+
+	set.Add(4)
+
+	require.ElementsMatch(t, []int{1, 2, 3, 4}, set.Values())
+	require.ElementsMatch(t, []int{1, 2, 3}, clone.Values())
+}
+
+func TestHashSetEqual(t *testing.T) {
+	setOne := hashset.New(1, 2, 3)
+	setTwo := hashset.New(3, 4, 5)
+	setThree := hashset.New(1, 2, 3, 4, 5)
+	clone := setOne.Copy()
+
+	require.True(t, setOne.Equal(clone))
+	require.False(t, setOne.Equal(setTwo))
+	require.False(t, setOne.Equal(setThree))
+}
+
 func TestHashSetEach(t *testing.T) {
 	res := make([]int, 0)
 
@@ -72,6 +106,16 @@ func TestHashSetEach(t *testing.T) {
 
 	hashset.New(1, 2, 3).Each(fn)
 	require.ElementsMatch(t, []int{2, 4, 6}, res)
+}
+
+func TestHashSetMap(t *testing.T) {
+	fn := func(v int) int {
+		return v * 2
+	}
+
+	require.ElementsMatch(t, []int{}, hashset.New[int]().Map(fn).Values())
+	require.ElementsMatch(t, []int{2}, hashset.New(1).Map(fn).Values())
+	require.ElementsMatch(t, []int{2, 4, 6}, hashset.New(1, 2, 3).Map(fn).Values())
 }
 
 func TestHashSetHas(t *testing.T) {
@@ -198,6 +242,43 @@ func TestHashSetDiff(t *testing.T) {
 	require.ElementsMatch(t,
 		[]int{},
 		hashset.New(2, 3).Diff(hashset.New(1, 2, 3, 4)).Values(),
+	)
+}
+
+func TestHashSetSymDiff(t *testing.T) {
+	require.ElementsMatch(t,
+		[]int{},
+		hashset.New[int]().SymDiff(hashset.New[int]()).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 2, 3},
+		hashset.New(1, 2, 3).SymDiff(hashset.New[int]()).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 2, 3},
+		hashset.New[int]().SymDiff(hashset.New(1, 2, 3)).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 2, 3, 4, 5},
+		hashset.New(1, 2, 3).SymDiff(hashset.New(4, 5)).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 2, 4, 5},
+		hashset.New(1, 2, 3).SymDiff(hashset.New(3, 4, 5)).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 3},
+		hashset.New(1, 2, 3).SymDiff(hashset.New(2)).Values(),
+	)
+
+	require.ElementsMatch(t,
+		[]int{1, 4},
+		hashset.New(2, 3).SymDiff(hashset.New(1, 2, 3, 4)).Values(),
 	)
 }
 
