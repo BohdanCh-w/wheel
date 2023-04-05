@@ -28,7 +28,8 @@ var _ Logger = (*PtermLogger)(nil)
 
 func NewPtermLogger(level LogLevel) *PtermLogger {
 	return &PtermLogger{
-		log: pterm.DefaultLogger.WithLevel(ptermLevel(level)),
+		log:  pterm.DefaultLogger.WithLevel(ptermLevel(level)),
+		args: make(map[string]any),
 	}
 }
 
