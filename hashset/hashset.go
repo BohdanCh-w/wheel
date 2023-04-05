@@ -31,6 +31,11 @@ func (s Set[T]) Del(values ...T) {
 	}
 }
 
+// Empty retruns whether set has no elements.
+func (s Set[T]) Empty() bool {
+	return len(s.values) == 0
+}
+
 // Has returns true only if 'val' is in the set.
 func (s Set[T]) Has(val T) bool {
 	_, ok := s.values[val]

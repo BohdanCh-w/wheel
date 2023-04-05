@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bohdanch-w/datatypes/hashset"
+	"github.com/bohdanch-w/wheel/hashset"
 )
 
 func TestHashSetNewAndValues(t *testing.T) {
@@ -48,6 +48,11 @@ func TestHashSetDel(t *testing.T) {
 
 	fullSet.Del(1, 2, 3)
 	require.ElementsMatch(t, []int{}, fullSet.Values())
+}
+
+func TestHashSetEmpty(t *testing.T) {
+	require.True(t, hashset.New[int]().Empty())
+	require.False(t, hashset.New(1, 2, 3).Empty())
 }
 
 func TestHashSetLen(t *testing.T) {
