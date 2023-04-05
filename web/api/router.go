@@ -37,7 +37,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) wrapMiddleware(handler Handler, mid ...Middleware) Handler {
-	fullMid := make([]Middleware, 0, len(r.mid)+len(mid))
+	fullMid := make([]Middleware, len(r.mid), len(r.mid)+len(mid))
 
 	copy(fullMid, r.mid)
 	fullMid = append(fullMid, mid...)
