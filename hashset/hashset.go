@@ -76,7 +76,7 @@ func (s Set[T]) Each(fn func(key T)) {
 	}
 }
 
-// Map returns a new Set with applied function to each element
+// Map returns a new Set with applied function to each element.
 func (s Set[T]) Map(fn func(key T) T) Set[T] {
 	newSet := make(map[T]struct{})
 
@@ -100,12 +100,12 @@ func (s Set[T]) Values() []T {
 	return values
 }
 
-// Clear clears all values
+// Clear clears all values.
 func (s *Set[T]) Clear() {
 	s.values = make(map[T]struct{})
 }
 
-// Returns copt of current set
+// Returns copt of current set.
 func (s Set[T]) Copy() Set[T] {
 	return New(s.Values()...)
 }
@@ -174,7 +174,7 @@ func (s Set[T]) Diff(other Set[T]) Set[T] {
 	}
 }
 
-// SymDiff returns symetric difference of two sets values (that are values that are in first and second set, but not in both).
+// SymDiff returns symetric difference of two sets values.
 func (s Set[T]) SymDiff(other Set[T]) Set[T] {
 	newSet := s.Union(other)
 
