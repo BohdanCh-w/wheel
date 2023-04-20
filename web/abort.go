@@ -8,15 +8,18 @@ import (
 func Abort(w http.ResponseWriter, err error) error {
 	w.Header().Set("Content-Type", "application/json")
 
-	var webErr *WebError
+	var (
+		webErr *WebError
+		code   = http.StatusInternalServerError
+	)
 
 	if errors.As(err, &webErr) {
-		w.WriteHeader(webErr.Code)
-	} else {
-		w.WriteHeader(http.StatusInternalServerError)
+		code = webErr.Code
 	}
 
-	_, writeErr := w.Write([]byte(`{"error": "` + err.Error() + `"}`))
+	return Respond(w, code, errorResponse{Error: err.Error()}) // nolint: wrapcheck
+}
 
-	return writeErr // nolint: wrapcheck
+type errorResponse struct {
+	Error string `json:"error"`
 }

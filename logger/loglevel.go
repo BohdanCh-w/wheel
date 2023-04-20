@@ -1,10 +1,14 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	wherr "github.com/bohdanch-w/wheel/errors"
+	"github.com/google/uuid"
+
+	"github.com/bohdanch-w/wheel/errors"
+	"github.com/bohdanch-w/wheel/web"
 )
 
 type LogLevel uint8
@@ -17,7 +21,7 @@ const (
 	Fatal
 
 	invalid
-	errInvalidLogLevel = wherr.Error("loglevel is invalid")
+	errInvalidLogLevel = errors.Error("loglevel is invalid")
 )
 
 func LogLevelFromString(str string) LogLevel {
@@ -50,4 +54,12 @@ func (l *LogLevel) UnmarshalText(text []byte) error {
 	*l = level
 
 	return nil
+}
+
+func FromCtx(ctx context.Context, log Logger) Logger {
+	if transactionID := web.TransactionIDFromCtx(ctx); transactionID == uuid.Nil {
+		return log.WithTransaction(transactionID)
+	}
+
+	return log
 }
