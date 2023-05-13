@@ -9,6 +9,7 @@ require (
 	github.com/pterm/pterm v0.12.58
 	github.com/rs/cors v1.8.3
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/time v0.3.0
 	gorm.io/gorm v1.25.1
 )
 

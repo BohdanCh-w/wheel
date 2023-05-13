@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/uuid"
 
-	whlogger "github.com/bohdanch-w/wheel/logger"
+	"github.com/bohdanch-w/wheel/logger"
 	"github.com/bohdanch-w/wheel/web"
 	"github.com/bohdanch-w/wheel/web/api"
 )
 
 type IdentityMid struct {
-	Logger whlogger.Logger
+	Logger logger.Logger
 }
 
 func (mid *IdentityMid) Wrap(h api.Handler) api.Handler {
