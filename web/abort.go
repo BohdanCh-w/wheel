@@ -17,9 +17,9 @@ func Abort(w http.ResponseWriter, err error) error {
 		code = webErr.Code
 	}
 
-	return Respond(w, code, errorResponse{Error: err.Error()}) // nolint: wrapcheck
+	return Respond(w, code, errorResponse{Error: webErr.Unwrap()}) // nolint: wrapcheck
 }
 
 type errorResponse struct {
-	Error string `json:"error"`
+	Error error `json:"error"`
 }

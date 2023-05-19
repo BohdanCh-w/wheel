@@ -24,11 +24,7 @@ func (mid *ErrorMid) Wrap(h api.Handler) api.Handler {
 			webErr.Err = err
 		}
 
-		if webErr.Status() > 0 {
-			return web.Abort(w, webErr) // nolint: wrapcheck
-		}
-
-		return err
+		return web.Abort(w, webErr) // nolint: wrapcheck
 	}
 
 	return f
