@@ -23,3 +23,7 @@ func (e *WebError) Error() string {
 func (e *WebError) Status() int {
 	return e.Code
 }
+
+func (e *WebError) Unwrap() error {
+	return e.Err
+}
