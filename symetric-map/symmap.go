@@ -39,14 +39,10 @@ func (s SymMap[L, R]) Empty() bool {
 	return len(s.left) == 0
 }
 
-func (s SymMap[L, R]) GetLeft(left L) (R, bool) {
-	r, ok := s.left[left]
-
-	return r, ok
+func (s SymMap[L, R]) GetLeft(right R) L {
+	return s.right[right]
 }
 
-func (s SymMap[L, R]) GetRight(right R) (L, bool) {
-	l, ok := s.right[right]
-
-	return l, ok
+func (s SymMap[L, R]) GetRight(left L) R {
+	return s.left[left]
 }

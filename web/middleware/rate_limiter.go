@@ -66,6 +66,7 @@ func (mid *RateLimiter) clean() {
 		select {
 		case <-mid.Shut:
 			mid.Logger.Infof("rate limiter done")
+
 			return
 		case <-ticker.C:
 		}

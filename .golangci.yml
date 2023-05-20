@@ -10,6 +10,7 @@ linters-settings:
     ignoreSigs:
       - web.Respond
       - web.Abort
+      - web.NewError
       - fmt.Errorf
 
 linters:
