@@ -39,22 +39,43 @@ type PtermLogger struct {
 	args map[string]any
 }
 
-func (ptl *PtermLogger) WithLevel(level LogLevel) Logger {
-	ptl.log.Level = ptermLevel(level)
+func copyArgs(args map[string]any) map[string]any {
+	ret := make(map[string]any, len(args))
+	for k, v := range args {
+		ret[k] = v
+	}
 
-	return ptl
+	return ret
+}
+
+func (ptl *PtermLogger) WithLevel(level LogLevel) Logger {
+	return &PtermLogger{
+		log:  ptl.log.WithLevel(ptermLevel(level)),
+		tID:  ptl.tID,
+		args: copyArgs(ptl.args),
+	}
 }
 
 func (ptl *PtermLogger) WithTransaction(id uuid.UUID) Logger {
-	ptl.tID = id
+	log := *ptl.log
 
-	return ptl
+	return &PtermLogger{
+		log:  &log,
+		tID:  id,
+		args: copyArgs(ptl.args),
+	}
 }
 
 func (ptl *PtermLogger) With(key string, value any) Logger {
-	ptl.args[key] = value
+	log := *ptl.log
+	args := copyArgs(ptl.args)
+	args[key] = value
 
-	return ptl
+	return &PtermLogger{
+		log:  &log,
+		tID:  ptl.tID,
+		args: args,
+	}
 }
 
 func (ptl *PtermLogger) Debugf(msg string, args ...any) {
