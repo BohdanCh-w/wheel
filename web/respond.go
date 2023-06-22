@@ -7,13 +7,13 @@ import (
 )
 
 func Respond(w http.ResponseWriter, status int, v interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+
 	w.WriteHeader(status)
 
 	if v == nil {
 		return nil
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
