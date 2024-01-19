@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	set "github.com/bohdanch-w/wheel/ordered-set"
+	set "github.com/bohdanch-w/wheel/ds/ordered-set"
 )
 
 func TestOrderedSetNewAndValues(t *testing.T) {

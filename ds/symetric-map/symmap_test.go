@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	symmap "github.com/bohdanch-w/wheel/symetric-map"
+	symmap "github.com/bohdanch-w/wheel/ds/symetric-map"
 )
 
 func TestSymetricMapNew_Success(t *testing.T) {

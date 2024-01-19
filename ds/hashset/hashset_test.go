@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bohdanch-w/wheel/hashset"
+	"github.com/bohdanch-w/wheel/ds/hashset"
 )
 
 func TestHashSetNewAndValues(t *testing.T) {
