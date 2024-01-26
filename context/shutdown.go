@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-func OSInteruptContext(c context.Context) context.Context {
+func OSInterruptContext(c context.Context) context.Context {
 	ctx, cancel := context.WithCancel(c)
 
 	go func() {

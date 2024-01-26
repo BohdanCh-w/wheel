@@ -6,7 +6,7 @@ import (
 
 	gocors "github.com/rs/cors"
 
-	"github.com/bohdanch-w/wheel/hashset"
+	"github.com/bohdanch-w/wheel/ds/hashset"
 	"github.com/bohdanch-w/wheel/web/api"
 )
 

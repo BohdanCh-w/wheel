@@ -66,6 +66,17 @@ func (ptl *PtermLogger) WithTransaction(id uuid.UUID) Logger {
 	}
 }
 
+func (ptl *PtermLogger) WithError(err error) Logger {
+	log := *ptl.log
+	args := copyArgs(ptl.args)
+	args["error"] = err.Error()
+
+	return &PtermLogger{
+		log:  &log,
+		args: args,
+	}
+}
+
 func (ptl *PtermLogger) With(key string, value any) Logger {
 	log := *ptl.log
 	args := copyArgs(ptl.args)
@@ -79,26 +90,26 @@ func (ptl *PtermLogger) With(key string, value any) Logger {
 }
 
 func (ptl *PtermLogger) Debugf(msg string, args ...any) {
-	ptl.log.Debug(fmt.Sprintf(msg, args...), ptl.argumets())
+	ptl.log.Debug(fmt.Sprintf(msg, args...), ptl.arguments())
 }
 
 func (ptl *PtermLogger) Infof(msg string, args ...any) {
-	ptl.log.Info(fmt.Sprintf(msg, args...), ptl.argumets())
+	ptl.log.Info(fmt.Sprintf(msg, args...), ptl.arguments())
 }
 
 func (ptl *PtermLogger) Warnf(msg string, args ...any) {
-	ptl.log.Warn(fmt.Sprintf(msg, args...), ptl.argumets())
+	ptl.log.Warn(fmt.Sprintf(msg, args...), ptl.arguments())
 }
 
 func (ptl *PtermLogger) Errorf(msg string, args ...any) {
-	ptl.log.Error(fmt.Sprintf(msg, args...), ptl.argumets())
+	ptl.log.Error(fmt.Sprintf(msg, args...), ptl.arguments())
 }
 
 func (ptl *PtermLogger) Fatalf(msg string, args ...any) {
-	ptl.log.Fatal(fmt.Sprintf(msg, args...), ptl.argumets())
+	ptl.log.Fatal(fmt.Sprintf(msg, args...), ptl.arguments())
 }
 
-func (ptl *PtermLogger) argumets() []pterm.LoggerArgument {
+func (ptl *PtermLogger) arguments() []pterm.LoggerArgument {
 	args := make([]pterm.LoggerArgument, 0, len(ptl.args)+1)
 
 	if ptl.tID != uuid.Nil {

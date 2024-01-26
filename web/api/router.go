@@ -18,6 +18,14 @@ type Router struct {
 	mid []Middleware
 }
 
+type Route struct {
+	Name    string
+	Path    string
+	Mid     []Middleware
+	Methods []string
+	Handler Handler
+}
+
 func (r *Router) RegisterRoute(route *Route) {
 	handler := r.wrapMiddleware(route.Handler, route.Mid...)
 
