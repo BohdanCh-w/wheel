@@ -52,7 +52,7 @@ func (r *Router) RegisterFileRoute(route *FileRoute) {
 		}
 	}
 
-	r.mx.Handle(route.Path, http.HandlerFunc(h)).Name(route.Name).Methods(http.MethodGet)
+	r.mx.PathPrefix(route.Path).Handler(http.HandlerFunc(h)).Name(route.Name).Methods(http.MethodGet)
 }
 
 func (r *Router) RegisterWebsocketRoute(route *WebsocketRoute) {
