@@ -2,7 +2,7 @@ package logger
 
 import "github.com/google/uuid"
 
-const TransationKey = "transaction-id"
+const TransactionKey = "transaction-id"
 
 type Logger interface {
 	WithLevel(level LogLevel) Logger
