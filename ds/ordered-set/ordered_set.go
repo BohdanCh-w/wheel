@@ -30,11 +30,30 @@ func (s *Set[T]) Add(values ...T) {
 	}
 }
 
+// Insert adds 'value' to the set and returns true if the value was not present.
+func (s *Set[T]) Insert(value T) bool {
+	_, ok := s.values[value]
+
+	s.values[value] = s.count
+	s.count++
+
+	return !ok
+}
+
 // Remove removes 'val' from the set.
 func (s Set[T]) Del(values ...T) {
 	for _, v := range values {
 		delete(s.values, v)
 	}
+}
+
+// Remove removes 'value' from the set and returns true if the value was present.
+func (s *Set[T]) Remove(value T) bool {
+	_, ok := s.values[value]
+
+	delete(s.values, value)
+
+	return ok
 }
 
 // Empty retruns whether set has no elements.
@@ -134,8 +153,11 @@ func (s Set[T]) Equal(other Set[T]) bool {
 		return false
 	}
 
-	for v := range s.values {
-		if _, ok := other.values[v]; !ok {
+	val1 := s.Values()
+	val2 := other.Values()
+
+	for v := range val1 {
+		if val1[v] != val2[v] {
 			return false
 		}
 	}

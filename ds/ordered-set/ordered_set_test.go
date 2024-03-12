@@ -30,6 +30,19 @@ func TestOrderedSetAdd(t *testing.T) {
 	require.Equal(t, []int{4, 6, 7}, emptySet.Values())
 }
 
+func TestOrderedSetInsert(t *testing.T) {
+	emptySet := set.New[int]()
+	require.Equal(t, []int{}, emptySet.Values())
+
+	added := emptySet.Insert(4)
+	require.Equal(t, []int{4}, emptySet.Values())
+	require.True(t, added)
+
+	added = emptySet.Insert(4)
+	require.Equal(t, []int{4}, emptySet.Values())
+	require.False(t, added)
+}
+
 func TestOrderedSetDel(t *testing.T) {
 	fullSet := set.New(1, 2, 3, 4, 5, 6, 7)
 	require.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, fullSet.Values())
@@ -48,6 +61,19 @@ func TestOrderedSetDel(t *testing.T) {
 
 	fullSet.Del(1, 2, 3)
 	require.Equal(t, []int{}, fullSet.Values())
+}
+
+func TestOrderedSetRemove(t *testing.T) {
+	fullSet := set.New(1, 2, 3, 4, 5)
+	require.Equal(t, []int{1, 2, 3, 4, 5}, fullSet.Values())
+
+	removed := fullSet.Remove(4)
+	require.Equal(t, []int{1, 2, 3, 5}, fullSet.Values())
+	require.True(t, removed)
+
+	removed = fullSet.Remove(4)
+	require.Equal(t, []int{1, 2, 3, 5}, fullSet.Values())
+	require.False(t, removed)
 }
 
 func TestOrderedSetEmpty(t *testing.T) {
@@ -86,13 +112,11 @@ func TestOrderedSetCopy(t *testing.T) {
 
 func TestOrderedSetEqual(t *testing.T) {
 	setOne := set.New(1, 2, 3)
-	setTwo := set.New(3, 4, 5)
-	setThree := set.New(1, 2, 3, 4, 5)
-	clone := setOne.Copy()
 
-	require.True(t, setOne.Equal(clone))
-	require.False(t, setOne.Equal(setTwo))
-	require.False(t, setOne.Equal(setThree))
+	require.True(t, setOne.Equal(setOne.Copy()))
+	require.True(t, setOne.Equal(set.New(1, 2, 3)))
+	require.False(t, setOne.Equal(set.New(3, 4, 5)))
+	require.False(t, setOne.Equal(set.New(3, 2, 1)))
 }
 
 func TestOrderedSetEach(t *testing.T) {

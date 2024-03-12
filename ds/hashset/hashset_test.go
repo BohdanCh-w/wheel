@@ -30,6 +30,19 @@ func TestHashSetAdd(t *testing.T) {
 	require.ElementsMatch(t, []int{4, 6, 7}, emptySet.Values())
 }
 
+func TestHashSetInsert(t *testing.T) {
+	emptySet := hashset.New[int]()
+	require.ElementsMatch(t, []int{}, emptySet.Values())
+
+	added := emptySet.Insert(4)
+	require.ElementsMatch(t, []int{4}, emptySet.Values())
+	require.True(t, added)
+
+	added = emptySet.Insert(4)
+	require.ElementsMatch(t, []int{4}, emptySet.Values())
+	require.False(t, added)
+}
+
 func TestHashSetDel(t *testing.T) {
 	fullSet := hashset.New(1, 2, 3, 4, 5, 6, 7)
 	require.ElementsMatch(t, []int{1, 2, 3, 4, 5, 6, 7}, fullSet.Values())
@@ -48,6 +61,19 @@ func TestHashSetDel(t *testing.T) {
 
 	fullSet.Del(1, 2, 3)
 	require.ElementsMatch(t, []int{}, fullSet.Values())
+}
+
+func TestHashSetRemove(t *testing.T) {
+	fullSet := hashset.New(1, 2, 3, 4, 5)
+	require.ElementsMatch(t, []int{1, 2, 3, 4, 5}, fullSet.Values())
+
+	removed := fullSet.Remove(4)
+	require.ElementsMatch(t, []int{1, 2, 3, 5}, fullSet.Values())
+	require.True(t, removed)
+
+	removed = fullSet.Remove(4)
+	require.ElementsMatch(t, []int{1, 2, 3, 5}, fullSet.Values())
+	require.False(t, removed)
 }
 
 func TestHashSetEmpty(t *testing.T) {
