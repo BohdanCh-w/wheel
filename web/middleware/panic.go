@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	whctx "github.com/bohdanch-w/wheel/context"
 	wherr "github.com/bohdanch-w/wheel/errors"
 	whlogger "github.com/bohdanch-w/wheel/logger"
 	"github.com/bohdanch-w/wheel/web"
@@ -17,7 +18,7 @@ type PanicMid struct {
 
 func (mid *PanicMid) Wrap(h api.Handler) api.Handler {
 	f := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		transactionID := web.TransactionIDFromCtx(ctx)
+		transactionID := whctx.TransactionIDFromCtx(ctx)
 
 		defer func() {
 			if r := recover(); r != nil {

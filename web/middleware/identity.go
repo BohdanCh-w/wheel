@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
+	whctx "github.com/bohdanch-w/wheel/context"
 	"github.com/bohdanch-w/wheel/logger"
-	"github.com/bohdanch-w/wheel/web"
 	"github.com/bohdanch-w/wheel/web/api"
 )
 
@@ -23,7 +23,7 @@ func (mid *IdentityMid) Wrap(h api.Handler) api.Handler {
 			start = time.Now()
 		)
 
-		ctx = web.CtxWithTransactionID(ctx, id)
+		ctx = whctx.CtxWithTransactionID(ctx, id)
 
 		mid.Logger.
 			WithTransaction(id).

@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
+	whctx "github.com/bohdanch-w/wheel/context"
 	"github.com/bohdanch-w/wheel/errors"
-	"github.com/bohdanch-w/wheel/web"
 )
 
 type LogLevel uint8
@@ -57,7 +57,7 @@ func (l *LogLevel) UnmarshalText(text []byte) error {
 }
 
 func FromCtx(ctx context.Context, log Logger) Logger {
-	if transactionID := web.TransactionIDFromCtx(ctx); transactionID == uuid.Nil {
+	if transactionID := whctx.TransactionIDFromCtx(ctx); transactionID == uuid.Nil {
 		return log.WithTransaction(transactionID)
 	}
 
