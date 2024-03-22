@@ -21,7 +21,10 @@ func (mid *ErrorMid) Wrap(h api.Handler) api.Handler {
 		var webErr *web.WebError
 
 		if !errors.As(err, &webErr) {
-			webErr.Err = err
+			webErr = &web.WebError{
+				Code: http.StatusInternalServerError,
+				Err:  err,
+			}
 		}
 
 		return web.Abort(w, webErr) // nolint: wrapcheck
