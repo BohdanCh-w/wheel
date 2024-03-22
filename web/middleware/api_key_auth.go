@@ -9,19 +9,19 @@ import (
 )
 
 type APIKeyAuthMid struct {
-	apiKeyFunc func(r *http.Request) string
-	apiKey     string
+	APIKeyFunc func(r *http.Request) string
+	APIKey     string
 }
 
 func (mid *APIKeyAuthMid) Wrap(h api.Handler) api.Handler {
 	f := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		actualAPIKey := mid.apiKeyFunc(r)
+		actualAPIKey := mid.APIKeyFunc(r)
 
 		if actualAPIKey == "" {
 			return web.Respond(w, http.StatusUnauthorized, map[string]string{"error": "missing API key"})
 		}
 
-		if actualAPIKey != mid.apiKey {
+		if actualAPIKey != mid.APIKey {
 			return web.Respond(w, http.StatusUnauthorized, map[string]string{"error": "invalid API key"})
 		}
 
