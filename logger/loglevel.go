@@ -57,7 +57,7 @@ func (l *LogLevel) UnmarshalText(text []byte) error {
 }
 
 func FromCtx(ctx context.Context, log Logger) Logger {
-	if transactionID := whctx.TransactionIDFromCtx(ctx); transactionID == uuid.Nil {
+	if transactionID := whctx.TransactionID(ctx); transactionID == uuid.Nil {
 		return log.WithTransaction(transactionID)
 	}
 

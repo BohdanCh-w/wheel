@@ -23,7 +23,7 @@ func (mid *IdentityMid) Wrap(h api.Handler) api.Handler {
 			start = time.Now()
 		)
 
-		ctx = whctx.CtxWithTransactionID(ctx, id)
+		ctx = whctx.WithTransactionID(ctx, id)
 
 		mid.Logger.
 			WithTransaction(id).

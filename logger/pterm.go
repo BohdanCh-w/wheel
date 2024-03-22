@@ -113,7 +113,7 @@ func (ptl *PtermLogger) arguments() []pterm.LoggerArgument {
 	args := make([]pterm.LoggerArgument, 0, len(ptl.args)+1)
 
 	if ptl.tID != uuid.Nil {
-		args = append(args, ptl.log.Args(TransationKey, ptl.tID)...)
+		args = append(args, ptl.log.Args(TransactionKey, ptl.tID)...)
 	}
 
 	return append(args, ptl.log.ArgsFromMap(ptl.args)...)

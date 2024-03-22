@@ -18,7 +18,7 @@ type PanicMid struct {
 
 func (mid *PanicMid) Wrap(h api.Handler) api.Handler {
 	f := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		transactionID := whctx.TransactionIDFromCtx(ctx)
+		transactionID := whctx.TransactionID(ctx)
 
 		defer func() {
 			if r := recover(); r != nil {

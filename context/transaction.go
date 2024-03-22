@@ -12,12 +12,12 @@ const (
 	TransactionIDKey ctxKey = iota
 )
 
-func CtxWithTransactionID(ctx context.Context, id uuid.UUID) context.Context {
-	return context.WithValue(ctx, TransactionIDKey, id)
+func WithTransactionID(c context.Context, t uuid.UUID) context.Context {
+	return context.WithValue(c, TransactionIDKey, t)
 }
 
-func TransactionIDFromCtx(ctx context.Context) uuid.UUID {
-	v, _ := ctx.Value(TransactionIDKey).(uuid.UUID)
+func TransactionID(c context.Context) uuid.UUID {
+	id, _ := c.Value(TransactionIDKey).(uuid.UUID)
 
-	return v
+	return id
 }

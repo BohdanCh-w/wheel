@@ -1,9 +1,12 @@
 package api
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 func NewRouter(mid ...Middleware) *Router {
@@ -18,14 +21,6 @@ type Router struct {
 	mid []Middleware
 }
 
-type Route struct {
-	Name    string
-	Path    string
-	Mid     []Middleware
-	Methods []string
-	Handler Handler
-}
-
 func (r *Router) RegisterRoute(route *Route) {
 	handler := r.wrapMiddleware(route.Handler, route.Mid...)
 
@@ -38,6 +33,49 @@ func (r *Router) RegisterRoute(route *Route) {
 	}
 
 	r.mx.Handle(route.Path, http.HandlerFunc(h)).Name(route.Name).Methods(route.Methods...)
+}
+
+func (r *Router) RegisterFileRoute(route *FileRoute) {
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		http.FileServer(http.Dir(route.Directory)).ServeHTTP(w, r)
+
+		return nil
+	}
+
+	handler = r.wrapMiddleware(handler, route.Mid...)
+
+	h := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		if err := handler(ctx, w, r); err != nil {
+			return
+		}
+	}
+
+	r.mx.PathPrefix(route.Path).Handler(http.HandlerFunc(h)).Name(route.Name).Methods(http.MethodGet)
+}
+
+func (r *Router) RegisterWebsocketRoute(route *WebsocketRoute) {
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		c, err := (&websocket.Upgrader{}).Upgrade(w, r, nil)
+		if err != nil {
+			return fmt.Errorf("failed to upgrade to websocket connection: %w", err)
+		}
+
+		return route.Handler(ctx, c)
+	}
+
+	handler = r.wrapMiddleware(handler, route.Mid...)
+
+	h := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		if err := handler(ctx, w, r); err != nil {
+			return
+		}
+	}
+
+	r.mx.Handle(route.Path, http.HandlerFunc(h)).Name(route.Name).Methods(http.MethodGet)
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
