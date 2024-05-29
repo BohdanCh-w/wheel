@@ -1,5 +1,5 @@
 package api
 
 type Middleware interface {
-	Wrap(Handler) Handler
+	Wrap(h Handler) Handler
 }

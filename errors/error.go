@@ -9,5 +9,5 @@ func (e Error) Error() string {
 }
 
 func Errorf(format, err string, args ...any) error {
-	return fmt.Errorf(format, append([]any{Error(err)}, args...)...)
+	return fmt.Errorf(format, append([]any{Error(err)}, args...)...) // nolint: err113
 }

@@ -1,17 +1,18 @@
 module github.com/bohdanch-w/wheel
 
-go 1.20
+go 1.22
 
 require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.1
-	github.com/jackc/pgx/v5 v5.3.1
+	github.com/jackc/pgx/v5 v5.4.3
 	github.com/pterm/pterm v0.12.58
 	github.com/rs/cors v1.8.3
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/time v0.3.0
-	gorm.io/gorm v1.25.1
+	gorm.io/driver/postgres v1.5.7
+	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
 )
 
 require (

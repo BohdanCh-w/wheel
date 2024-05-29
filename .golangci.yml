@@ -22,20 +22,9 @@ linters:
     - nolintlint
     - ireturn
     - exhaustruct
+    - depguard
   
     # deprecated
-    - structcheck
-    - varcheck
-    - ifshort
-    - deadcode
-    - nosnakecase
-    - interfacer
-    - maligned
-    - scopelint
-    - golint
-    - exhaustivestruct
+    - execinquery
+    - gomnd
     
-    # unsupported generics
-    # - rowserrcheck
-    # - sqlclosecheck
-    # - wastedassign

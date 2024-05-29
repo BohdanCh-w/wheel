@@ -36,7 +36,7 @@ func (r *Router) RegisterRoute(route *Route) {
 }
 
 func (r *Router) RegisterFileRoute(route *FileRoute) {
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	handler := func(_ context.Context, w http.ResponseWriter, r *http.Request) error { // nolint: unparam
 		http.FileServer(http.Dir(route.Directory)).ServeHTTP(w, r)
 
 		return nil
