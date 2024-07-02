@@ -220,3 +220,14 @@ func (s Set[T]) IsSubset(other Set[T]) bool {
 
 	return true
 }
+
+// From creates a new set from a slice of any values by converting them to comparable using provided function.
+func From[T comparable, U any](values []U, fn func(U) T) Set[T] {
+	set := New[T]()
+
+	for _, v := range values {
+		set.Add(fn(v))
+	}
+
+	return set
+}

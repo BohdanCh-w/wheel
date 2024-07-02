@@ -1,6 +1,7 @@
 package hashset_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -320,4 +321,9 @@ func TestHashSetIsSubset(t *testing.T) {
 	require.False(t, hashset.New(1, 2, 3).IsSubset(hashset.New(4, 5)))
 	require.True(t, hashset.New(2, 3).IsSubset(hashset.New(1, 2, 3, 4)))
 	require.False(t, hashset.New(1, 2, 3).IsSubset(hashset.New(2)))
+}
+
+func TestHashSetFrom(t *testing.T) {
+	require.ElementsMatch(t, []string{}, hashset.From([]int{}, strconv.Itoa).Values())
+	require.ElementsMatch(t, []string{"1", "2", "3"}, hashset.From([]int{1, 2, 3}, strconv.Itoa).Values())
 }
