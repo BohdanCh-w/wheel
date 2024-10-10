@@ -62,6 +62,8 @@ func (r *Router) RegisterWebsocketRoute(route *WebsocketRoute) {
 			return fmt.Errorf("failed to upgrade to websocket connection: %w", err)
 		}
 
+		defer c.Close()
+
 		return route.Handler(ctx, c)
 	}
 
