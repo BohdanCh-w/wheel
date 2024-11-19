@@ -64,7 +64,7 @@ func (r *Router) RegisterWebsocketRoute(route *WebsocketRoute) {
 
 		defer c.Close()
 
-		return route.Handler(ctx, c)
+		return route.Handler(ctx, &WSRequest{Origin: r, Conn: c})
 	}
 
 	handler = r.wrapMiddleware(handler, route.Mid...)
