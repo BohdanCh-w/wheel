@@ -17,34 +17,65 @@ import (
 const (
 	errRateExceeded = wherr.Error("rate exceeded")
 
-	clearRate       = 1000
+	clearRate       = time.Minute
 	clearAfterTicks = 3
 	burstSize       = 1
 )
 
 type ClientIdentityFunc func(ctx context.Context, r *http.Request) string
 
-type RateLimiter struct {
-	Logger       logger.Logger
-	ClientIDFunc ClientIdentityFunc
-	QPS          float64
-	Shut         <-chan struct{}
+func ClientIdentityIPFunc(ctx context.Context, r *http.Request) string {
+	return r.RemoteAddr
+}
 
-	mu      sync.Mutex
+func NewRateLimiter(
+	logger logger.Logger,
+	clientIDFunc ClientIdentityFunc,
+	qps float64,
+) (*rateLimiter, context.CancelFunc) {
+	shut := make(chan struct{})
+	done := make(chan struct{})
+
+	cancelFunc := func() {
+		close(shut)
+		<-done
+	}
+
+	limiter := &rateLimiter{
+		logger:       logger,
+		clientIDFunc: clientIDFunc,
+		qps:          qps,
+		clients:      make(map[string]*rateClient),
+		shut:         shut,
+		done:         done,
+	}
+
+	return limiter, cancelFunc
+}
+
+type rateLimiter struct {
+	logger       logger.Logger
+	clientIDFunc ClientIdentityFunc
+	qps          float64
+
+	start   sync.Once
+	shut    <-chan struct{}
+	done    chan<- struct{}
+	mu      sync.RWMutex
 	clients map[string]*rateClient
 }
 
-func (mid *RateLimiter) Wrap(h api.Handler) api.Handler {
-	mid.clients = make(map[string]*rateClient)
-
-	go mid.clean()
+func (mid *rateLimiter) Wrap(h api.Handler) api.Handler {
+	mid.start.Do(func() {
+		go mid.clean()
+	})
 
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		log := logger.FromCtx(ctx, mid.Logger)
+		log := logger.FromCtx(ctx, mid.logger)
 
 		log.Debugf("start rate_limiter middleware")
 
-		if id := mid.ClientIDFunc(ctx, r); !mid.check(id) {
+		if id := mid.clientIDFunc(ctx, r); !mid.check(id) {
 			log.Warnf("rate_limiter: %q client: too many requests", id)
 
 			return web.NewError(http.StatusTooManyRequests, errRateExceeded)
@@ -54,18 +85,19 @@ func (mid *RateLimiter) Wrap(h api.Handler) api.Handler {
 	}
 }
 
-func (mid *RateLimiter) clean() {
+func (mid *rateLimiter) clean() {
 	var (
-		tickDuration = time.Duration(mid.QPS*float64(time.Second)) * clearRate
+		tickDuration = max(clearRate/time.Duration(mid.qps), time.Second)
 		ticker       = time.NewTicker(tickDuration)
 	)
 
 	defer ticker.Stop()
+	defer close(mid.done)
 
 	for {
 		select {
-		case <-mid.Shut:
-			mid.Logger.Infof("rate limiter done")
+		case <-mid.shut:
+			mid.logger.Infof("rate limiter done")
 
 			return
 		case <-ticker.C:
@@ -74,7 +106,7 @@ func (mid *RateLimiter) clean() {
 		mid.mu.Lock()
 
 		for key, client := range mid.clients {
-			if time.Since(client.lastConnection) > clearAfterTicks {
+			if time.Since(client.lastConnection) > clearAfterTicks*tickDuration {
 				delete(mid.clients, key)
 			}
 		}
@@ -83,17 +115,25 @@ func (mid *RateLimiter) clean() {
 	}
 }
 
-func (mid *RateLimiter) check(id string) bool {
-	mid.mu.Lock()
-	defer mid.mu.Unlock()
+func (mid *rateLimiter) check(id string) bool {
+	mid.mu.RLock()
+	client, ok := mid.clients[id]
+	mid.mu.RUnlock()
 
-	if _, ok := mid.clients[id]; !ok {
-		mid.clients[id] = &rateClient{
-			limiter: rate.NewLimiter(rate.Limit(mid.QPS), burstSize),
+	if !ok {
+		client := &rateClient{
+			limiter:        rate.NewLimiter(rate.Limit(mid.qps), burstSize),
+			lastConnection: time.Now(),
 		}
+
+		mid.mu.Lock()
+		mid.clients[id] = client
+		mid.mu.Unlock()
+
+		return client.limiter.Allow()
 	}
 
-	mid.clients[id].lastConnection = time.Now()
+	client.lastConnection = time.Now()
 
 	return mid.clients[id].limiter.Allow()
 }

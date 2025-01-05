@@ -7,8 +7,10 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.1
 	github.com/jackc/pgx/v5 v5.4.3
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pterm/pterm v0.12.58
 	github.com/rs/cors v1.8.3
+	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/time v0.3.0
 	gorm.io/driver/postgres v1.5.7
