@@ -10,7 +10,6 @@ import (
 
 var _ Cache[string, string] = (*GoCacheImpl[string, string])(nil)
 
-// NewGoCache constructs new Cache.
 func NewGoCache[K comparable, V any](
 	expire time.Duration,
 	expireJitter time.Duration,
@@ -20,7 +19,7 @@ func NewGoCache[K comparable, V any](
 
 	_, err := cast.ToStringE(key)
 	if err != nil {
-		panic("key must be stringifiable")
+		panic("key must be stringifyable")
 	}
 
 	return &GoCacheImpl[K, V]{

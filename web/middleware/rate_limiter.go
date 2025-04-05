@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"cmp"
 	"context"
 	"net/http"
 	"sync"
@@ -15,24 +16,25 @@ import (
 )
 
 const (
-	errRateExceeded = wherr.Error("rate exceeded")
+	ErrRateExceeded = wherr.Error("rate exceeded")
 
 	clearRate       = time.Minute
 	clearAfterTicks = 3
-	burstSize       = 1
 )
+
+type rateLimiter interface {
+	Allow() bool
+}
 
 type ClientIdentityFunc func(ctx context.Context, r *http.Request) string
 
-func ClientIdentityIPFunc(ctx context.Context, r *http.Request) string {
-	return r.RemoteAddr
-}
+type RateLimiterOpt func(*rateLimiterMiddleware)
 
 func NewRateLimiter(
 	logger logger.Logger,
-	clientIDFunc ClientIdentityFunc,
 	qps float64,
-) (*rateLimiter, context.CancelFunc) {
+	opts ...RateLimiterOpt,
+) (*rateLimiterMiddleware, context.CancelFunc) {
 	shut := make(chan struct{})
 	done := make(chan struct{})
 
@@ -41,31 +43,37 @@ func NewRateLimiter(
 		<-done
 	}
 
-	limiter := &rateLimiter{
-		logger:       logger,
-		clientIDFunc: clientIDFunc,
-		qps:          qps,
-		clients:      make(map[string]*rateClient),
-		shut:         shut,
-		done:         done,
+	limiter := &rateLimiterMiddleware{
+		logger:         logger,
+		qps:            qps,
+		clients:        make(map[string]*rateClient),
+		shut:           shut,
+		done:           done,
+		clientIDFunc:   defaultClientIdentityFunc,
+		limiterFactory: defaultRateLimiterFactory(qps),
+	}
+
+	for _, opt := range opts {
+		opt(limiter)
 	}
 
 	return limiter, cancelFunc
 }
 
-type rateLimiter struct {
+type rateLimiterMiddleware struct {
 	logger       logger.Logger
 	clientIDFunc ClientIdentityFunc
 	qps          float64
 
-	start   sync.Once
-	shut    <-chan struct{}
-	done    chan<- struct{}
-	mu      sync.RWMutex
-	clients map[string]*rateClient
+	start          sync.Once
+	shut           <-chan struct{}
+	done           chan<- struct{}
+	mu             sync.RWMutex
+	clients        map[string]*rateClient
+	limiterFactory func() rateLimiter
 }
 
-func (mid *rateLimiter) Wrap(h api.Handler) api.Handler {
+func (mid *rateLimiterMiddleware) Wrap(h api.Handler) api.Handler {
 	mid.start.Do(func() {
 		go mid.clean()
 	})
@@ -78,14 +86,14 @@ func (mid *rateLimiter) Wrap(h api.Handler) api.Handler {
 		if id := mid.clientIDFunc(ctx, r); !mid.check(id) {
 			log.Warnf("rate_limiter: %q client: too many requests", id)
 
-			return web.NewError(http.StatusTooManyRequests, errRateExceeded)
+			return web.NewError(http.StatusTooManyRequests, ErrRateExceeded)
 		}
 
 		return h(ctx, w, r)
 	}
 }
 
-func (mid *rateLimiter) clean() {
+func (mid *rateLimiterMiddleware) clean() {
 	var (
 		tickDuration = max(clearRate/time.Duration(mid.qps), time.Second)
 		ticker       = time.NewTicker(tickDuration)
@@ -115,14 +123,14 @@ func (mid *rateLimiter) clean() {
 	}
 }
 
-func (mid *rateLimiter) check(id string) bool {
+func (mid *rateLimiterMiddleware) check(id string) bool {
 	mid.mu.RLock()
 	client, ok := mid.clients[id]
 	mid.mu.RUnlock()
 
 	if !ok {
 		client := &rateClient{
-			limiter:        rate.NewLimiter(rate.Limit(mid.qps), burstSize),
+			limiter:        mid.limiterFactory(),
 			lastConnection: time.Now(),
 		}
 
@@ -139,6 +147,31 @@ func (mid *rateLimiter) check(id string) bool {
 }
 
 type rateClient struct {
-	limiter        *rate.Limiter
+	limiter        rateLimiter
 	lastConnection time.Time
+}
+
+func RateLimiterWithFactory(f func() rateLimiter) func(*rateLimiterMiddleware) {
+	return func(rl *rateLimiterMiddleware) {
+		rl.limiterFactory = f
+	}
+}
+
+func RateLimiterWithIdentityFunc(f ClientIdentityFunc) func(*rateLimiterMiddleware) {
+	return func(rl *rateLimiterMiddleware) {
+		rl.clientIDFunc = f
+	}
+}
+
+// default limiter burst size is half the qps
+func defaultRateLimiterFactory(qps float64) func() rateLimiter {
+	burstSize := cmp.Or(int(qps/2), 1)
+
+	return func() rateLimiter {
+		return rate.NewLimiter(rate.Limit(qps), burstSize)
+	}
+}
+
+func defaultClientIdentityFunc(ctx context.Context, r *http.Request) string {
+	return r.RemoteAddr
 }
