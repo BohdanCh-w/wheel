@@ -49,7 +49,7 @@ func (s Set[T]) Remove(value T) bool {
 	return ok
 }
 
-// Empty retruns whether set has no elements.
+// Empty returns whether set has no elements.
 func (s Set[T]) Empty() bool {
 	return len(s.values) == 0
 }
@@ -61,7 +61,7 @@ func (s Set[T]) Has(val T) bool {
 	return ok
 }
 
-// Has returns true only if any of the 'values' is in the set.
+// HasAny returns true if any of the 'values' is in the set.
 func (s Set[T]) HasAny(values ...T) bool {
 	if len(values) == 0 {
 		return true
@@ -76,7 +76,7 @@ func (s Set[T]) HasAny(values ...T) bool {
 	return false
 }
 
-// Has returns true only if all of the 'values' are in the set.
+// HasAll returns true only if all of the 'values' are in the set.
 func (s Set[T]) HasAll(values ...T) bool {
 	for _, v := range values {
 		if _, ok := s.values[v]; !ok {

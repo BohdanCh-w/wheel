@@ -99,7 +99,7 @@ func (s Set[T]) Len() int {
 	return len(s.values)
 }
 
-// Each calls 'fn' on every item in the set.
+// Each calls 'fn' on every item in the set in order.
 func (s Set[T]) Each(fn func(key T)) {
 	for _, k := range s.Values() {
 		fn(k)
