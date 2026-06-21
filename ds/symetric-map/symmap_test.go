@@ -1,3 +1,4 @@
+// nolint: goconst
 package symmap_test
 
 import (

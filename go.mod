@@ -3,6 +3,7 @@ module github.com/bohdanch-w/wheel
 go 1.23
 
 require (
+	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.1
@@ -12,6 +13,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561
 	golang.org/x/time v0.3.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde

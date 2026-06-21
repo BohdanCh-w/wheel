@@ -9,7 +9,7 @@ import (
 )
 
 func Version(version, build, buildTime string) whapi.Handler {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
 		resp := versionResponse{
 			Version:   version,
 			Build:     build,

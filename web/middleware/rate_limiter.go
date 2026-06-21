@@ -28,13 +28,13 @@ type rateLimiter interface {
 
 type ClientIdentityFunc func(ctx context.Context, r *http.Request) string
 
-type RateLimiterOpt func(*rateLimiterMiddleware)
+type RateLimiterOpt func(*RateLimiterMiddleware)
 
 func NewRateLimiter(
 	logger logger.Logger,
 	qps float64,
 	opts ...RateLimiterOpt,
-) (*rateLimiterMiddleware, context.CancelFunc) {
+) (*RateLimiterMiddleware, context.CancelFunc) {
 	shut := make(chan struct{})
 	done := make(chan struct{})
 
@@ -43,7 +43,7 @@ func NewRateLimiter(
 		<-done
 	}
 
-	limiter := &rateLimiterMiddleware{
+	limiter := &RateLimiterMiddleware{
 		logger:         logger,
 		qps:            qps,
 		clients:        make(map[string]*rateClient),
@@ -60,7 +60,7 @@ func NewRateLimiter(
 	return limiter, cancelFunc
 }
 
-type rateLimiterMiddleware struct {
+type RateLimiterMiddleware struct {
 	logger       logger.Logger
 	clientIDFunc ClientIdentityFunc
 	qps          float64
@@ -73,7 +73,7 @@ type rateLimiterMiddleware struct {
 	limiterFactory func() rateLimiter
 }
 
-func (mid *rateLimiterMiddleware) Wrap(h api.Handler) api.Handler {
+func (mid *RateLimiterMiddleware) Wrap(h api.Handler) api.Handler {
 	mid.start.Do(func() {
 		go mid.clean()
 	})
@@ -93,7 +93,7 @@ func (mid *rateLimiterMiddleware) Wrap(h api.Handler) api.Handler {
 	}
 }
 
-func (mid *rateLimiterMiddleware) clean() {
+func (mid *RateLimiterMiddleware) clean() {
 	var (
 		tickDuration = max(clearRate/time.Duration(mid.qps), time.Second)
 		ticker       = time.NewTicker(tickDuration)
@@ -123,7 +123,7 @@ func (mid *rateLimiterMiddleware) clean() {
 	}
 }
 
-func (mid *rateLimiterMiddleware) check(id string) bool {
+func (mid *RateLimiterMiddleware) check(id string) bool {
 	mid.mu.RLock()
 	client, ok := mid.clients[id]
 	mid.mu.RUnlock()
@@ -151,27 +151,27 @@ type rateClient struct {
 	lastConnection time.Time
 }
 
-func RateLimiterWithFactory(f func() rateLimiter) func(*rateLimiterMiddleware) {
-	return func(rl *rateLimiterMiddleware) {
+func RateLimiterWithFactory(f func() rateLimiter) func(*RateLimiterMiddleware) {
+	return func(rl *RateLimiterMiddleware) {
 		rl.limiterFactory = f
 	}
 }
 
-func RateLimiterWithIdentityFunc(f ClientIdentityFunc) func(*rateLimiterMiddleware) {
-	return func(rl *rateLimiterMiddleware) {
+func RateLimiterWithIdentityFunc(f ClientIdentityFunc) func(*RateLimiterMiddleware) {
+	return func(rl *RateLimiterMiddleware) {
 		rl.clientIDFunc = f
 	}
 }
 
-// default limiter burst size is half the qps
+// default limiter burst size is half the qps.
 func defaultRateLimiterFactory(qps float64) func() rateLimiter {
-	burstSize := cmp.Or(int(qps/2), 1)
+	burstSize := cmp.Or(int(qps/2), 1) // nolint: mnd
 
 	return func() rateLimiter {
 		return rate.NewLimiter(rate.Limit(qps), burstSize)
 	}
 }
 
-func defaultClientIdentityFunc(ctx context.Context, r *http.Request) string {
+func defaultClientIdentityFunc(_ context.Context, r *http.Request) string {
 	return r.RemoteAddr
 }

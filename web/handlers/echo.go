@@ -10,7 +10,7 @@ import (
 )
 
 func Echo() whapi.Handler {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
 		var req EchoRequest
 
 		req.parse(r)
